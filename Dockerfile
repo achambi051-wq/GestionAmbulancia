@@ -1,38 +1,26 @@
-# Consulte https://aka.ms/customizecontainer para aprender a personalizar su contenedor de depuración
-
-# Esta fase se usa cuando se ejecuta desde VS en modo rápido
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER $APP_UID
-WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
-
-# Esta fase se usa para compilar el proyecto de servicio
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# 🔧 CORREGIDO: El csproj está en la raíz, no en subcarpeta
+# Instalar dotnet-ef globalmente
+RUN dotnet tool install --global dotnet-ef
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
+# Copiar y restaurar
 COPY ["Ambulancia_MIS.csproj", "."]
 RUN dotnet restore "./Ambulancia_MIS.csproj"
 
-# Copiar todo el resto de archivos
+# Copiar todo y publicar
 COPY . .
+RUN dotnet publish "./Ambulancia_MIS.csproj" -c Release -o /app/publish
 
-# Compilar
-RUN dotnet build "./Ambulancia_MIS.csproj" -c $BUILD_CONFIGURATION -o /app/build
-
-# Publicar
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Ambulancia_MIS.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-
-# Fase final
-FROM base AS final
+# Imagen final
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish .
 
-# Configurar puerto para Railway
+# Instalar dotnet-ef también en la imagen final
+RUN dotnet tool install --global dotnet-ef
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
 ENV ASPNETCORE_URLS=http://+:8080
-
 ENTRYPOINT ["dotnet", "Ambulancia_MIS.dll"]
