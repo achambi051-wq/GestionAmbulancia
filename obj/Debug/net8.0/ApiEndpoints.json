@@ -1,0 +1,625 @@
+[
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.AlertasCriticasController",
+    "Method": "CrearAlerta",
+    "RelativePath": "api/AlertasCriticas",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idMision",
+        "Type": "System.Int64",
+        "IsRequired": false
+      },
+      {
+        "Name": "tipo",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "gravedad",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.AlertasCriticasController",
+    "Method": "MarcarAlertaAtendida",
+    "RelativePath": "api/AlertasCriticas/marcar-atendida/{idAlerta}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idAlerta",
+        "Type": "System.Int64",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.AlertasCriticasController",
+    "Method": "GetAlertasPorMision",
+    "RelativePath": "api/AlertasCriticas/mision/{idMision}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idMision",
+        "Type": "System.Int64",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.AmbulanciaInsumoController",
+    "Method": "AsignarInsumo",
+    "RelativePath": "api/AmbulanciaInsumo/asignar",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "codigoAmbulancia",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "codigoInsumo",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "cantidad",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "lote",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.AmbulanciaInsumoController",
+    "Method": "GetInventarioDetallado",
+    "RelativePath": "api/AmbulanciaInsumo/inventario-detallado",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.AmbulanciaInsumoController",
+    "Method": "GetStockPorAmbulancia",
+    "RelativePath": "api/AmbulanciaInsumo/stock/{codigoAmbulancia}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "codigoAmbulancia",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.AmbulanciasController",
+    "Method": "GetAmbulancias",
+    "RelativePath": "api/Ambulancias",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.AmbulanciasController",
+    "Method": "CreateAmbulancia",
+    "RelativePath": "api/Ambulancias",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "ambulanciaDto",
+        "Type": "Ambulancia_MIS.DTOs.AmbulanciaDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.AmbulanciasController",
+    "Method": "GetAmbulanciaByCodigo",
+    "RelativePath": "api/Ambulancias/{codigo}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "codigo",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.AmbulanciasController",
+    "Method": "UpdateAmbulancia",
+    "RelativePath": "api/Ambulancias/{codigo}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "codigo",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "kilometraje",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "capacidadOxigeno",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.AmbulanciasController",
+    "Method": "DeleteAmbulancia",
+    "RelativePath": "api/Ambulancias/{codigo}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "codigo",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.ConstantesVitalesController",
+    "Method": "CrearConstante",
+    "RelativePath": "api/ConstantesVitales",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "constanteDto",
+        "Type": "Ambulancia_MIS.DTOs.ConstanteVitalDTO",
+        "IsRequired": true
+      },
+      {
+        "Name": "idMision",
+        "Type": "System.Int64",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.ConstantesVitalesController",
+    "Method": "GetConstantesPorMision",
+    "RelativePath": "api/ConstantesVitales/mision/{idMision}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idMision",
+        "Type": "System.Int64",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.HistorialUbicacionController",
+    "Method": "RegistrarUbicacion",
+    "RelativePath": "api/HistorialUbicacion",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idMision",
+        "Type": "System.Int64",
+        "IsRequired": false
+      },
+      {
+        "Name": "idAmbulancia",
+        "Type": "System.Int64",
+        "IsRequired": false
+      },
+      {
+        "Name": "latitud",
+        "Type": "System.Decimal",
+        "IsRequired": false
+      },
+      {
+        "Name": "longitud",
+        "Type": "System.Decimal",
+        "IsRequired": false
+      },
+      {
+        "Name": "velocidad",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.HistorialUbicacionController",
+    "Method": "GetHistorialPorMision",
+    "RelativePath": "api/HistorialUbicacion/mision/{idMision}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idMision",
+        "Type": "System.Int64",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.InsumosController",
+    "Method": "GetInsumos",
+    "RelativePath": "api/Insumos",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.InsumosController",
+    "Method": "CreateInsumo",
+    "RelativePath": "api/Insumos",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "insumoDto",
+        "Type": "Ambulancia_MIS.DTOs.InsumoDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.InsumosController",
+    "Method": "GetInsumoByCodigo",
+    "RelativePath": "api/Insumos/{codigo}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "codigo",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.InsumosController",
+    "Method": "DeleteInsumo",
+    "RelativePath": "api/Insumos/{codigo}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "codigo",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.MisionesController",
+    "Method": "GetMisiones",
+    "RelativePath": "api/Misiones",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.MisionesController",
+    "Method": "CreateMision",
+    "RelativePath": "api/Misiones",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "misionDto",
+        "Type": "Ambulancia_MIS.DTOs.MisionDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.MisionesController",
+    "Method": "GetAlertasPaciente",
+    "RelativePath": "api/Misiones/alertas-paciente/{documento}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "documento",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.MisionesController",
+    "Method": "GetCamasDisponibles",
+    "RelativePath": "api/Misiones/camas-disponibles/{tipo}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "tipo",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.MisionesController",
+    "Method": "GetChecklistMantenimiento",
+    "RelativePath": "api/Misiones/checklist-mantenimiento/{codigoActivo}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "codigoActivo",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.MisionesController",
+    "Method": "GetHistorialConstantesVitales",
+    "RelativePath": "api/Misiones/constantes-vitales/{idMision}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idMision",
+        "Type": "System.Int64",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.MisionesController",
+    "Method": "GetEstadoDesinfeccionTerminal",
+    "RelativePath": "api/Misiones/estado-desinfeccion/{codigoVehiculo}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "codigoVehiculo",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.MisionesController",
+    "Method": "GetIndicadoresTiempoRespuesta",
+    "RelativePath": "api/Misiones/indicadores-tiempo-respuesta",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.MisionesController",
+    "Method": "GetOrdenMision",
+    "RelativePath": "api/Misiones/orden-mision/{numeroSolicitud}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "numeroSolicitud",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.MisionesController",
+    "Method": "GetProtocoloBioseguridad",
+    "RelativePath": "api/Misiones/protocolo-bioseguridad/{tipoResiduo}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "tipoResiduo",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.MisionesController",
+    "Method": "GetStockInsumosAmbulancia",
+    "RelativePath": "api/Misiones/stock-insumos/{codigoAmbulancia}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "codigoAmbulancia",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.MisionesController",
+    "Method": "GetZonasAlertaEpidemiologica",
+    "RelativePath": "api/Misiones/zonas-alerta-epidemiologica",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.NotificacionesController",
+    "Method": "EnviarNotificacion",
+    "RelativePath": "api/Notificaciones",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idMision",
+        "Type": "System.Int64",
+        "IsRequired": false
+      },
+      {
+        "Name": "destinatario",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "mensaje",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "canal",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.NotificacionesController",
+    "Method": "GetNotificacionesPorMision",
+    "RelativePath": "api/Notificaciones/mision/{idMision}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idMision",
+        "Type": "System.Int64",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.ReportesController",
+    "Method": "GetAmbulanciasConStock",
+    "RelativePath": "api/Reportes/ambulancias-con-stock",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.ReportesController",
+    "Method": "GetAmbulanciasSinInsumos",
+    "RelativePath": "api/Reportes/ambulancias-sin-insumos",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.ReportesController",
+    "Method": "GetMisionBySolicitud",
+    "RelativePath": "api/Reportes/buscar-mision/{numeroSolicitud}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "numeroSolicitud",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.ReportesController",
+    "Method": "GetMisionesPorPrioridad",
+    "RelativePath": "api/Reportes/misiones-por-prioridad",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Ambulancia_MIS.Controllers.ReportesController",
+    "Method": "GetStockTotalPorAmbulancia",
+    "RelativePath": "api/Reportes/stock-total-por-ambulancia",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  }
+]

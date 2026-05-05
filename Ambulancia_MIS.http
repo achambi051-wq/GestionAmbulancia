@@ -1,0 +1,6 @@
+@Ambulancia_MIS_HostAddress = http://localhost:5043
+
+GET {{Ambulancia_MIS_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
