@@ -4,13 +4,22 @@ using Ambulancia_MIS.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ==================== CONFIGURACI�N PARA RAILWAY ====================
+// ==================== CONFIGURACIÓN PARA RAILWAY ====================
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // ==================== BASE DE DATOS ====================
-var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL")
+var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL") 
                        ?? builder.Configuration.GetConnectionString("AmbulanciaContext");
+
+// Convertir URL de Railway a formato Npgsql
+if (!string.IsNullOrEmpty(connectionString) && connectionString.Contains("postgresql://"))
+{
+    var uri = new Uri(connectionString);
+    var userInfo = uri.UserInfo.Split(':');
+    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true;";
+}
+
 builder.Services.AddDbContext<AmbulanciaContext>(options =>
     options.UseNpgsql(connectionString));
 
@@ -35,18 +44,55 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// ==================== MIGRACIONES AUTOM�TICAS AL INICIAR ====================
+// ==================== MIGRACIONES Y DATOS SEMILLA (FORZADO) ====================
 using (var scope = app.Services.CreateScope())
 {
+    var db = scope.ServiceProvider.GetRequiredService<AmbulanciaContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
     try
     {
-        var db = scope.ServiceProvider.GetRequiredService<AmbulanciaContext>();
+        logger.LogInformation("🔄 Intentando conectar a PostgreSQL...");
+        
+        // Intentar conectar con reintentos
+        for (int i = 0; i < 10; i++)
+        {
+            try
+            {
+                if (db.Database.CanConnect())
+                {
+                    logger.LogInformation("✅ Conexión a PostgreSQL establecida.");
+                    break;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning($"⚠️ Intento {i + 1}/10 falló: {ex.Message}");
+                await Task.Delay(3000);
+            }
+        }
+        
+        // Ejecutar migraciones
+        logger.LogInformation("🔄 Ejecutando migraciones...");
         db.Database.Migrate();
-        Console.WriteLine("Base de datos migrada correctamente");
+        logger.LogInformation("✅ Migraciones ejecutadas correctamente.");
+        
+        // Verificar si hay datos semilla (opcional)
+        var tieneAmbulancias = db.Ambulancias.Any();
+        if (!tieneAmbulancias)
+        {
+            logger.LogInformation("⚠️ No hay datos en la tabla Ambulancias. Verificar que los HasData() se ejecutaron.");
+        }
+        else
+        {
+            logger.LogInformation($"✅ Datos cargados: {db.Ambulancias.Count()} ambulancias, {db.Insumos.Count()} insumos.");
+        }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($" Error al migrar BD: {ex.Message}");
+        logger.LogError($"❌ Error al migrar BD: {ex.Message}");
+        logger.LogError($"Stack trace: {ex.StackTrace}");
+        // No detener la aplicación
     }
 }
 
