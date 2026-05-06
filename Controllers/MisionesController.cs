@@ -353,20 +353,7 @@ namespace Ambulancia_MIS.Controllers
                 tiempoRespuestaMinutos = mision.TiempoRespuestaSegundos / 60
             });
         }
-        // GET: api/Misiones/test-emergencias
-        [HttpGet("test-emergencias")]
-        public async Task<IActionResult> TestConexionEmergencias()
-        {
-            var resultado = await _conexionExterna.TestConexionEmergenciasAsync();
-            var misiones = await _conexionExterna.GetMisionesActivasAsync();
-            
-            return Ok(new
-            {
-                ConexionExitosa = resultado,
-                MisionesActivas = misiones,
-                Mensaje = resultado ? "✅ Conexión con Emergencias exitosa" : "❌ No se pudo conectar con Emergencias"
-            });
-        }
+        
 
         // PUT: api/Misiones/{id}/llegada-hospital - Cerrar misión
         [HttpPut("{id}/llegada-hospital")]
