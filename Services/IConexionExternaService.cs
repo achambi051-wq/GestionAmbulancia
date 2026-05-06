@@ -2,9 +2,6 @@ using Ambulancia_MIS.DTOs;
 
 namespace Ambulancia_MIS.Services
 {
-    /// <summary>
-    /// Servicio para consumir API de otros microservicios
-    /// </summary>
     public interface IConexionExternaService
     {
         // ==================== EMERGENCIAS (#2) ====================
@@ -42,11 +39,16 @@ namespace Ambulancia_MIS.Services
         // ==================== RECURSOS HUMANOS (#16) ====================
         Task<PersonalExternoDTO?> GetPersonalAsync(string documento);
         Task<CertificacionExternaDTO?> GetCertificacionesAsync(string documento);
+        Task<List<PersonalExternoDTO>> GetPersonalActivoAsync();
+        Task<List<PersonalExternoDTO>> GetPersonalPorRolAsync(string rol);
+        Task<bool> TestConexionRRHHAsync();
 
         // ==================== LOGÍSTICA HOSPITALARIA (#31) ====================
         Task<List<CamaExternaDTO>> GetCamasDisponiblesAsync(string tipo);
         Task<bool> SolicitarReposicionInsumosAsync(string codigoAmbulancia, List<ReposicionItemDTO> items);
         Task<AlmacenStockExternoDTO?> GetStockAlmacenAsync(string codigoInsumo);
+        Task<object?> GetResumenCamasAsync();
+        Task<bool> TestConexionLogisticaAsync();
 
         // ==================== CONTROL EPIDEMIOLÓGICO (#33) ====================
         Task<List<AlertaEpidemiologicaExternaDTO>> GetAlertasActivasAsync();
