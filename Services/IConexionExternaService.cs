@@ -11,6 +11,8 @@ namespace Ambulancia_MIS.Services
         Task<EmergenciaExternaDTO?> GetOrdenMisionAsync(string codigoEmergencia);
         Task<bool> RegistrarETAAsync(string codigoEmergencia, DateTime eta);
         Task<List<EmergenciaMisionDTO>> GetMisionesActivasAsync();
+        Task<List<EmergenciaMisionDTO>> GetMisionesSinETAAsync();
+        Task<bool> TestConexionEmergenciasAsync();
 
         // ==================== MANTENIMIENTO Y ACTIVOS (#20) ====================
         Task<ActivoExternoDTO?> GetActivoAsync(string codigo);
