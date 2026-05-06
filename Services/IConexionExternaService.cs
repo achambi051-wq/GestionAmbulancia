@@ -14,6 +14,21 @@ namespace Ambulancia_MIS.Services
         Task<List<EmergenciaMisionDTO>> GetMisionesSinETAAsync();
         Task<bool> TestConexionEmergenciasAsync();
 
+        // ==================== GESTIÓN DE PACIENTES (#1) ====================
+        Task<PacienteExternoDTO?> GetPacienteAsync(string documento);
+        Task<List<PacienteReporteDTO>> GetPacientesConTipoEstadoAsync();
+        Task<bool> ActualizarConstantesVitalesAsync(long idMision, object constantes);
+        Task<bool> TestConexionPacientesAsync();
+
+        // ==================== GESTIÓN DE CALIDAD (#22) ====================
+        Task<List<InformeCalidadDTO>> GetInformesCalidadAsync();
+        Task<InformeCalidadDTO?> GetInformeCalidadByCodigoAsync(string codigo);
+        Task<double?> GetPromedioCalidadSistemaAsync();
+        Task<List<PromedioDepartamentoDTO>> GetPromedioCalidadPorDepartamentoAsync();
+        Task<ProtocoloCalidadExternoDTO?> GetProtocoloCalidadAsync(string prioridad);
+        Task<bool> RegistrarKPIAsync(KPIMisionDTO kpi);
+        Task<bool> TestConexionCalidadAsync();
+
         // ==================== MANTENIMIENTO Y ACTIVOS (#20) ====================
         Task<ActivoExternoDTO?> GetActivoAsync(string codigo);
         Task<List<FallaExternaDTO>> GetFallasPendientesAsync(string codigoActivo);
@@ -24,17 +39,9 @@ namespace Ambulancia_MIS.Services
         Task<ProtocoloBioseguridadExternoDTO?> GetProtocoloBioseguridadAsync(string tipoResiduo);
         Task<List<ItemStockAlertaDTO>> GetItemsStockAlertaAsync();
 
-        // ==================== GESTIÓN DE PACIENTES (#1) ====================
-        Task<PacienteExternoDTO?> GetPacienteAsync(string documento);
-        Task<bool> ActualizarConstantesVitalesAsync(long idMision, object constantes);
-
         // ==================== RECURSOS HUMANOS (#16) ====================
         Task<PersonalExternoDTO?> GetPersonalAsync(string documento);
         Task<CertificacionExternaDTO?> GetCertificacionesAsync(string documento);
-
-        // ==================== GESTIÓN DE CALIDAD (#22) ====================
-        Task<ProtocoloCalidadExternoDTO?> GetProtocoloCalidadAsync(string prioridad);
-        Task<bool> RegistrarKPIAsync(KPIMisionDTO kpi);
 
         // ==================== LOGÍSTICA HOSPITALARIA (#31) ====================
         Task<List<CamaExternaDTO>> GetCamasDisponiblesAsync(string tipo);
