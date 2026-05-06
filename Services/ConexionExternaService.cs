@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Ambulancia_MIS.DTOs;
 
 namespace Ambulancia_MIS.Services
@@ -9,7 +9,6 @@ namespace Ambulancia_MIS.Services
         private readonly IConfiguration _config;
         private readonly ILogger<ConexionExternaService> _logger;
 
-        // URLs de los microservicios de compañeros
         private readonly string _pacientesUrl;
         private readonly string _emergenciasUrl;
         private readonly string _rrhhUrl;
@@ -26,16 +25,212 @@ namespace Ambulancia_MIS.Services
             _config = config;
             _logger = logger;
 
-            // Cargar URLs desde appsettings.json
             _pacientesUrl = _config["ExternalServices:GestionPacientesUrl"] ?? "http://10.77.200.19:7085/api";
-            _emergenciasUrl = _config["ExternalServices:EmergenciasUrl"] ?? "http://10.77.200.xxx:xxxx/api";
+            _emergenciasUrl = _config["ExternalServices:EmergenciasUrl"] ?? "https://hemergencias-production-82c5.up.railway.app/api";
             _rrhhUrl = _config["ExternalServices:RecursosHumanosUrl"] ?? "http://10.77.200.xxx:xxxx/api";
-            _mantenimientoUrl = _config["ExternalServices:MantenimientoUrl"] ?? "http://10.77.200.25:5039/api";
+            _mantenimientoUrl = _config["ExternalServices:MantenimientoUrl"] ?? "https://backendmya-production-4e82.up.railway.app/api";
             _calidadUrl = _config["ExternalServices:CalidadUrl"] ?? "http://10.77.200.xxx:xxxx/api";
-            _bioseguridadUrl = _config["ExternalServices:BioseguridadUrl"] ?? "http://10.77.200.18:5265/api";
+            _bioseguridadUrl = _config["ExternalServices:BioseguridadUrl"] ?? "https://bycs-production.up.railway.app/api";
             _logisticaUrl = _config["ExternalServices:LogisticaUrl"] ?? "http://10.77.200.246:5225/api";
             _epidemiologiaUrl = _config["ExternalServices:EpidemiologiaUrl"] ?? "http://10.77.200.xxx:xxxx/api";
             _facturacionUrl = _config["ExternalServices:FacturacionUrl"] ?? "http://10.77.200.xxx:xxxx/api";
+        }
+
+        // ==================== EMERGENCIAS (#2) ====================
+        /// <summary>
+        /// Obtiene orden de misión desde Emergencias
+        /// Endpoint: GET /api/ambulancia/orden?codigo={codigo} (según Swagger)
+        /// </summary>
+        public async Task<EmergenciaExternaDTO?> GetOrdenMisionAsync(string codigoEmergencia)
+        {
+            try
+            {
+                // Según el Swagger de Emergencias, el endpoint es /api/ambulancia/orden
+                // y recibe un objeto MisionAmbulancia en POST, no un GET simple
+                // Por ahora usamos el endpoint de misiones activas
+                var response = await _httpClient.GetAsync($"{_emergenciasUrl}/ambulancia/misiones");
+                if (response.IsSuccessStatusCode)
+                {
+                    var misiones = await response.Content.ReadFromJsonAsync<List<EmergenciaMisionDTO>>();
+                    var mision = misiones?.FirstOrDefault(m => m.codigo == codigoEmergencia);
+                    if (mision != null)
+                    {
+                        return new EmergenciaExternaDTO
+                        {
+                            Codigo = mision.codigo,
+                            Prioridad = mision.nivelGravedad,
+                            Ubicacion = "Por confirmar",
+                            Observaciones = $"Médico: {mision.medico}"
+                        };
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al consultar emergencia {codigo}", codigoEmergencia);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Registra el ETA (Tiempo Estimado de Llegada) en Emergencias
+        /// Endpoint: PUT /api/ambulancia/eta/{codigo}
+        /// </summary>
+        public async Task<bool> RegistrarETAAsync(string codigoEmergencia, DateTime eta)
+        {
+            try
+            {
+                var response = await _httpClient.PutAsJsonAsync($"{_emergenciasUrl}/ambulancia/eta/{codigoEmergencia}", eta);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al registrar ETA para emergencia {codigo}", codigoEmergencia);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene misiones activas con ETA
+        /// Endpoint: GET /api/ambulancia/misiones
+        /// </summary>
+        public async Task<List<EmergenciaMisionDTO>> GetMisionesActivasAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{_emergenciasUrl}/ambulancia/misiones");
+                if (response.IsSuccessStatusCode)
+                    return await response.Content.ReadFromJsonAsync<List<EmergenciaMisionDTO>>() ?? new();
+                return new();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al consultar misiones activas");
+                return new();
+            }
+        }
+
+        // ==================== MANTENIMIENTO Y ACTIVOS (#20) ====================
+        /// <summary>
+        /// Obtiene activo por código
+        /// Endpoint: GET /api/Activos/buscar/{codigo}
+        /// </summary>
+        public async Task<ActivoExternoDTO?> GetActivoAsync(string codigo)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{_mantenimientoUrl}/Activos/buscar/{codigo}");
+                if (response.IsSuccessStatusCode)
+                    return await response.Content.ReadFromJsonAsync<ActivoExternoDTO>();
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al consultar activo {codigo}", codigo);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene fallas pendientes por activo
+        /// Endpoint: GET /api/Fallas/porActivo/{codigoActivo}
+        /// </summary>
+        public async Task<List<FallaExternaDTO>> GetFallasPendientesAsync(string codigoActivo)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{_mantenimientoUrl}/Fallas/porActivo/{codigoActivo}");
+                if (response.IsSuccessStatusCode)
+                    return await response.Content.ReadFromJsonAsync<List<FallaExternaDTO>>() ?? new();
+                return new();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al consultar fallas de {codigo}", codigoActivo);
+                return new();
+            }
+        }
+
+        /// <summary>
+        /// Obtiene historial de mantenimientos por activo
+        /// Endpoint: GET /api/Mantenimientos/porActivo/{codigoActivo}
+        /// </summary>
+        public async Task<List<MantenimientoExternoDTO>> GetMantenimientosAsync(string codigoActivo)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{_mantenimientoUrl}/Mantenimientos/porActivo/{codigoActivo}");
+                if (response.IsSuccessStatusCode)
+                    return await response.Content.ReadFromJsonAsync<List<MantenimientoExternoDTO>>() ?? new();
+                return new();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al consultar mantenimientos de {codigo}", codigoActivo);
+                return new();
+            }
+        }
+
+        /// <summary>
+        /// Obtiene lista de activos operativos
+        /// Endpoint: GET /api/Activos/lista
+        /// </summary>
+        public async Task<List<ActivoListaDTO>> GetListaActivosAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{_mantenimientoUrl}/Activos/lista");
+                if (response.IsSuccessStatusCode)
+                    return await response.Content.ReadFromJsonAsync<List<ActivoListaDTO>>() ?? new();
+                return new();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al consultar lista de activos");
+                return new();
+            }
+        }
+
+        // ==================== BIOSEGURIDAD (#23) ====================
+        /// <summary>
+        /// Obtiene protocolo de bioseguridad por tipo de residuo
+        /// Endpoint: GET /api/Protocolos/GET/{codigo}
+        /// </summary>
+        public async Task<ProtocoloBioseguridadExternoDTO?> GetProtocoloBioseguridadAsync(string tipoResiduo)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{_bioseguridadUrl}/Protocolos/GET/{tipoResiduo}");
+                if (response.IsSuccessStatusCode)
+                    return await response.Content.ReadFromJsonAsync<ProtocoloBioseguridadExternoDTO>();
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al consultar protocolo de bioseguridad {tipo}", tipoResiduo);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene lista de items con stock bajo (para alertas de reposición)
+        /// Endpoint: GET /api/ItemStocks/GET/Alerta
+        /// </summary>
+        public async Task<List<ItemStockAlertaDTO>> GetItemsStockAlertaAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{_bioseguridadUrl}/ItemStocks/GET/Alerta");
+                if (response.IsSuccessStatusCode)
+                    return await response.Content.ReadFromJsonAsync<List<ItemStockAlertaDTO>>() ?? new();
+                return new();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al consultar items con stock bajo");
+                return new();
+            }
         }
 
         // ==================== GESTIÓN DE PACIENTES (#1) ====================
@@ -66,23 +261,6 @@ namespace Ambulancia_MIS.Services
             {
                 _logger.LogError(ex, "Error al actualizar constantes vitales");
                 return false;
-            }
-        }
-
-        // ==================== EMERGENCIAS (#2) ====================
-        public async Task<EmergenciaExternaDTO?> GetOrdenMisionAsync(string codigoEmergencia)
-        {
-            try
-            {
-                var response = await _httpClient.GetAsync($"{_emergenciasUrl}/Emergencias/{codigoEmergencia}");
-                if (response.IsSuccessStatusCode)
-                    return await response.Content.ReadFromJsonAsync<EmergenciaExternaDTO>();
-                return null;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al consultar emergencia {codigo}", codigoEmergencia);
-                return null;
             }
         }
 
@@ -119,55 +297,6 @@ namespace Ambulancia_MIS.Services
             }
         }
 
-        // ==================== MANTENIMIENTO Y ACTIVOS (#20) ====================
-        public async Task<ActivoExternoDTO?> GetActivoAsync(string codigo)
-        {
-            try
-            {
-                var response = await _httpClient.GetAsync($"{_mantenimientoUrl}/Activos/buscar/{codigo}");
-                if (response.IsSuccessStatusCode)
-                    return await response.Content.ReadFromJsonAsync<ActivoExternoDTO>();
-                return null;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al consultar activo {codigo}", codigo);
-                return null;
-            }
-        }
-
-        public async Task<List<FallaExternaDTO>> GetFallasPendientesAsync(string codigoActivo)
-        {
-            try
-            {
-                var response = await _httpClient.GetAsync($"{_mantenimientoUrl}/Fallas/porActivo/{codigoActivo}");
-                if (response.IsSuccessStatusCode)
-                    return await response.Content.ReadFromJsonAsync<List<FallaExternaDTO>>() ?? new();
-                return new();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al consultar fallas de {codigo}", codigoActivo);
-                return new();
-            }
-        }
-
-        public async Task<List<MantenimientoExternoDTO>> GetMantenimientosAsync(string codigoActivo)
-        {
-            try
-            {
-                var response = await _httpClient.GetAsync($"{_mantenimientoUrl}/Mantenimientos/porActivo/{codigoActivo}");
-                if (response.IsSuccessStatusCode)
-                    return await response.Content.ReadFromJsonAsync<List<MantenimientoExternoDTO>>() ?? new();
-                return new();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al consultar mantenimientos de {codigo}", codigoActivo);
-                return new();
-            }
-        }
-
         // ==================== GESTIÓN DE CALIDAD (#22) ====================
         public async Task<ProtocoloCalidadExternoDTO?> GetProtocoloCalidadAsync(string prioridad)
         {
@@ -196,23 +325,6 @@ namespace Ambulancia_MIS.Services
             {
                 _logger.LogError(ex, "Error al registrar KPI");
                 return false;
-            }
-        }
-
-        // ==================== BIOSEGURIDAD (#23) ====================
-        public async Task<ProtocoloBioseguridadExternoDTO?> GetProtocoloBioseguridadAsync(string tipoResiduo)
-        {
-            try
-            {
-                var response = await _httpClient.GetAsync($"{_bioseguridadUrl}/Bioseguridad/protocolo/{tipoResiduo}");
-                if (response.IsSuccessStatusCode)
-                    return await response.Content.ReadFromJsonAsync<ProtocoloBioseguridadExternoDTO>();
-                return null;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al consultar protocolo de bioseguridad {tipo}", tipoResiduo);
-                return null;
             }
         }
 
@@ -297,7 +409,36 @@ namespace Ambulancia_MIS.Services
         }
     }
 
-    // ==================== DTOs EXTERNOS ====================
+    // ==================== DTOs ESPECÍFICOS PARA EMERGENCIAS ====================
+    public class EmergenciaMisionDTO
+    {
+        public string codigo { get; set; } = string.Empty;
+        public string nivelGravedad { get; set; } = string.Empty;
+        public DateTime? fechaSalida { get; set; }
+        public DateTime? eta { get; set; }
+        public string medico { get; set; } = string.Empty;
+    }
+
+    // ==================== DTOs para Mantenimiento ====================
+    public class ActivoListaDTO
+    {
+        public string codigo { get; set; } = string.Empty;
+        public string nombre { get; set; } = string.Empty;
+        public string marca { get; set; } = string.Empty;
+        public string modelo { get; set; } = string.Empty;
+        public string codigoArea { get; set; } = string.Empty;
+    }
+
+    // ==================== DTOs para Bioseguridad ====================
+    public class ItemStockAlertaDTO
+    {
+        public string codigo_item { get; set; } = string.Empty;
+        public string codigo_inventario { get; set; } = string.Empty;
+        public int cantidad { get; set; }
+        public int cantidad_alerta { get; set; }
+    }
+
+    // ==================== RESTO DE DTOs (ya los tienes) ====================
     public class PacienteExternoDTO
     {
         public string Documento { get; set; } = string.Empty;
@@ -342,30 +483,31 @@ namespace Ambulancia_MIS.Services
 
     public class ActivoExternoDTO
     {
-        public string Codigo { get; set; } = string.Empty;
-        public string Nombre { get; set; } = string.Empty;
-        public string Tipo { get; set; } = string.Empty;
-        public string Estado { get; set; } = string.Empty;
+        public string codigo { get; set; } = string.Empty;
+        public string nombre { get; set; } = string.Empty;
+        public string marca { get; set; } = string.Empty;
+        public string modelo { get; set; } = string.Empty;
+        public string tipoActivo { get; set; } = string.Empty;
+        public string estadoActivo { get; set; } = string.Empty;
     }
 
     public class FallaExternaDTO
     {
-        public string Codigo { get; set; } = string.Empty;
-        public string CodigoActivo { get; set; } = string.Empty;
-        public string Descripcion { get; set; } = string.Empty;
-        public DateTime FechaReporte { get; set; }
-        public string Prioridad { get; set; } = string.Empty;
-        public string Estado { get; set; } = string.Empty;
+        public string codigo { get; set; } = string.Empty;
+        public string codigoActivo { get; set; } = string.Empty;
+        public string descripcion { get; set; } = string.Empty;
+        public DateTime fechaReporte { get; set; }
+        public string prioridad { get; set; } = string.Empty;
+        public string estadoFalla { get; set; } = string.Empty;
     }
 
     public class MantenimientoExternoDTO
     {
-        public string Codigo { get; set; } = string.Empty;
-        public string CodigoActivo { get; set; } = string.Empty;
-        public string Tipo { get; set; } = string.Empty;
-        public string Estado { get; set; } = string.Empty;
-        public DateTime FechaInicio { get; set; }
-        public DateTime? FechaFin { get; set; }
+        public string codigo { get; set; } = string.Empty;
+        public string tipo { get; set; } = string.Empty;
+        public string estadoMantenimiento { get; set; } = string.Empty;
+        public DateTime fechaInicio { get; set; }
+        public DateTime? fechaFin { get; set; }
     }
 
     public class ProtocoloCalidadExternoDTO
@@ -421,5 +563,32 @@ namespace Ambulancia_MIS.Services
         public int TiempoTrasladoSegundos { get; set; }
         public bool ProtocoloCumplido { get; set; }
         public DateTime FechaMision { get; set; }
+    }
+
+    public class ReporteConsumoDTO
+    {
+        public string NumeroSolicitud { get; set; } = string.Empty;
+        public string DocumentoPaciente { get; set; } = string.Empty;
+        public DateTime FechaMision { get; set; }
+        public string Prioridad { get; set; } = string.Empty;
+        public string CodigoAmbulancia { get; set; } = string.Empty;
+        public int KilometrajeRecorrido { get; set; }
+        public decimal CostoKilometraje { get; set; }
+        public List<ConsumoDetalleDTO> InsumosConsumidos { get; set; } = new();
+        public decimal TotalInsumos { get; set; }
+        public string ParamedicoAsignado { get; set; } = string.Empty;
+        public string ConductorAsignado { get; set; } = string.Empty;
+        public decimal CostoPersonal { get; set; }
+        public decimal CostoTotalMision { get; set; }
+        public string EstadoPago { get; set; } = "PENDIENTE";
+    }
+
+    public class ConsumoDetalleDTO
+    {
+        public string Insumo { get; set; } = string.Empty;
+        public string Codigo { get; set; } = string.Empty;
+        public int Cantidad { get; set; }
+        public decimal PrecioUnitario { get; set; }
+        public decimal Subtotal => Cantidad * PrecioUnitario;
     }
 }
