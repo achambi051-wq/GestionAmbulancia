@@ -26,7 +26,7 @@ namespace Ambulancia_MIS.Services
             _logger = logger;
 
             _pacientesUrl = _config["ExternalServices:GestionPacientesUrl"] ?? "http://10.77.200.19:7085/api";
-            _emergenciasUrl = _config["ExternalServices:EmergenciasUrl"] ?? "https://hemergencias-production-82c5.up.railway.app/api";
+            _emergenciasUrl = _config["ExternalServices:EmergenciasUrl"] ?? "https://hemergencias-production-82c5.up.railway.app/emergencias-upds/api";
             _rrhhUrl = _config["ExternalServices:RecursosHumanosUrl"] ?? "http://10.77.200.xxx:xxxx/api";
             _mantenimientoUrl = _config["ExternalServices:MantenimientoUrl"] ?? "https://backendmya-production-4e82.up.railway.app/api";
             _calidadUrl = _config["ExternalServices:CalidadUrl"] ?? "http://10.77.200.xxx:xxxx/api";
@@ -36,33 +36,30 @@ namespace Ambulancia_MIS.Services
             _facturacionUrl = _config["ExternalServices:FacturacionUrl"] ?? "http://10.77.200.xxx:xxxx/api";
         }
 
-        // ==================== EMERGENCIAS (#2) ====================
+        // ==================== EMERGENCIAS (#2) - CORREGIDO ====================
+        
         /// <summary>
-        /// Obtiene orden de misión desde Emergencias
-        /// Endpoint: GET /api/ambulancia/orden?codigo={codigo} (según Swagger)
+        /// Obtiene una orden de misión específica por código
+        /// Endpoint real: GET /emergencias-upds/api/ambulancia/misiones
+        /// Luego filtramos por código
         /// </summary>
         public async Task<EmergenciaExternaDTO?> GetOrdenMisionAsync(string codigoEmergencia)
         {
             try
             {
-                // Según el Swagger de Emergencias, el endpoint es /api/ambulancia/orden
-                // y recibe un objeto MisionAmbulancia en POST, no un GET simple
-                // Por ahora usamos el endpoint de misiones activas
-                var response = await _httpClient.GetAsync($"{_emergenciasUrl}/ambulancia/misiones");
-                if (response.IsSuccessStatusCode)
+                // Primero obtenemos todas las misiones activas
+                var misiones = await GetMisionesActivasAsync();
+                var mision = misiones?.FirstOrDefault(m => m.codigo == codigoEmergencia);
+                
+                if (mision != null)
                 {
-                    var misiones = await response.Content.ReadFromJsonAsync<List<EmergenciaMisionDTO>>();
-                    var mision = misiones?.FirstOrDefault(m => m.codigo == codigoEmergencia);
-                    if (mision != null)
+                    return new EmergenciaExternaDTO
                     {
-                        return new EmergenciaExternaDTO
-                        {
-                            Codigo = mision.codigo,
-                            Prioridad = mision.nivelGravedad,
-                            Ubicacion = "Por confirmar",
-                            Observaciones = $"Médico: {mision.medico}"
-                        };
-                    }
+                        Codigo = mision.codigo,
+                        Prioridad = mision.nivelGravedad,
+                        Ubicacion = "Por confirmar en atencion",
+                        Observaciones = $"Medico: {mision.medico}"
+                    };
                 }
                 return null;
             }
@@ -75,7 +72,7 @@ namespace Ambulancia_MIS.Services
 
         /// <summary>
         /// Registra el ETA (Tiempo Estimado de Llegada) en Emergencias
-        /// Endpoint: PUT /api/ambulancia/eta/{codigo}
+        /// Endpoint real: PUT /emergencias-upds/api/ambulancia/eta/{codigo}
         /// </summary>
         public async Task<bool> RegistrarETAAsync(string codigoEmergencia, DateTime eta)
         {
@@ -93,7 +90,7 @@ namespace Ambulancia_MIS.Services
 
         /// <summary>
         /// Obtiene misiones activas con ETA
-        /// Endpoint: GET /api/ambulancia/misiones
+        /// Endpoint real: GET /emergencias-upds/api/ambulancia/misiones
         /// </summary>
         public async Task<List<EmergenciaMisionDTO>> GetMisionesActivasAsync()
         {
@@ -101,7 +98,15 @@ namespace Ambulancia_MIS.Services
             {
                 var response = await _httpClient.GetAsync($"{_emergenciasUrl}/ambulancia/misiones");
                 if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    _logger.LogInformation($"Respuesta de Emergencias: {content}");
                     return await response.Content.ReadFromJsonAsync<List<EmergenciaMisionDTO>>() ?? new();
+                }
+                else
+                {
+                    _logger.LogWarning($"Error al consultar misiones activas: {response.StatusCode}");
+                }
                 return new();
             }
             catch (Exception ex)
@@ -111,11 +116,27 @@ namespace Ambulancia_MIS.Services
             }
         }
 
-        // ==================== MANTENIMIENTO Y ACTIVOS (#20) ====================
         /// <summary>
-        /// Obtiene activo por código
-        /// Endpoint: GET /api/Activos/buscar/{codigo}
+        /// Obtiene misiones sin ETA (crítico)
+        /// Endpoint real: GET /emergencias-upds/api/ambulancia/sin-eta
         /// </summary>
+        public async Task<List<EmergenciaMisionDTO>> GetMisionesSinETAAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{_emergenciasUrl}/ambulancia/sin-eta");
+                if (response.IsSuccessStatusCode)
+                    return await response.Content.ReadFromJsonAsync<List<EmergenciaMisionDTO>>() ?? new();
+                return new();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al consultar misiones sin ETA");
+                return new();
+            }
+        }
+
+        // ==================== MANTENIMIENTO Y ACTIVOS (#20) ====================
         public async Task<ActivoExternoDTO?> GetActivoAsync(string codigo)
         {
             try
@@ -132,10 +153,6 @@ namespace Ambulancia_MIS.Services
             }
         }
 
-        /// <summary>
-        /// Obtiene fallas pendientes por activo
-        /// Endpoint: GET /api/Fallas/porActivo/{codigoActivo}
-        /// </summary>
         public async Task<List<FallaExternaDTO>> GetFallasPendientesAsync(string codigoActivo)
         {
             try
@@ -152,10 +169,6 @@ namespace Ambulancia_MIS.Services
             }
         }
 
-        /// <summary>
-        /// Obtiene historial de mantenimientos por activo
-        /// Endpoint: GET /api/Mantenimientos/porActivo/{codigoActivo}
-        /// </summary>
         public async Task<List<MantenimientoExternoDTO>> GetMantenimientosAsync(string codigoActivo)
         {
             try
@@ -172,10 +185,6 @@ namespace Ambulancia_MIS.Services
             }
         }
 
-        /// <summary>
-        /// Obtiene lista de activos operativos
-        /// Endpoint: GET /api/Activos/lista
-        /// </summary>
         public async Task<List<ActivoListaDTO>> GetListaActivosAsync()
         {
             try
@@ -193,10 +202,6 @@ namespace Ambulancia_MIS.Services
         }
 
         // ==================== BIOSEGURIDAD (#23) ====================
-        /// <summary>
-        /// Obtiene protocolo de bioseguridad por tipo de residuo
-        /// Endpoint: GET /api/Protocolos/GET/{codigo}
-        /// </summary>
         public async Task<ProtocoloBioseguridadExternoDTO?> GetProtocoloBioseguridadAsync(string tipoResiduo)
         {
             try
@@ -213,10 +218,6 @@ namespace Ambulancia_MIS.Services
             }
         }
 
-        /// <summary>
-        /// Obtiene lista de items con stock bajo (para alertas de reposición)
-        /// Endpoint: GET /api/ItemStocks/GET/Alerta
-        /// </summary>
         public async Task<List<ItemStockAlertaDTO>> GetItemsStockAlertaAsync()
         {
             try
@@ -407,6 +408,21 @@ namespace Ambulancia_MIS.Services
                 return false;
             }
         }
+
+        // ==================== MÉTODO AUXILIAR PARA PROBAR CONEXIÓN ====================
+        public async Task<bool> TestConexionEmergenciasAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{_emergenciasUrl}/ambulancia/misiones");
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al probar conexión con Emergencias");
+                return false;
+            }
+        }
     }
 
     // ==================== DTOs ESPECÍFICOS PARA EMERGENCIAS ====================
@@ -438,7 +454,7 @@ namespace Ambulancia_MIS.Services
         public int cantidad_alerta { get; set; }
     }
 
-    // ==================== RESTO DE DTOs (ya los tienes) ====================
+    // ==================== RESTO DE DTOs ====================
     public class PacienteExternoDTO
     {
         public string Documento { get; set; } = string.Empty;
